@@ -4,44 +4,35 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public float moveSpeed;
+    Rigidbody2D body;
 
-    private bool isMoving;
+float horizontal;
+float vertical;
+float moveLimiter = 0.7f;
 
-    private Vector2 input;
+public float runSpeed = 20.0f;
 
-    private void Update()
-    {
-        if (!isMoving)
-        {
-            input.x = Input.GetAxisRaw("Horizontal");
-            input.y = Input.GetAxisRaw("Vertical");
+void Start ()
+{
+   body = GetComponent<Rigidbody2D>();
+}
 
-            if (input.x != 0) input.y = 0;
+void Update()
+{
+   // Gives a value between -1 and 1
+   horizontal = Input.GetAxisRaw("Horizontal"); // -1 is left
+   vertical = Input.GetAxisRaw("Vertical"); // -1 is down
+}
 
+void FixedUpdate()
+{
+   if (horizontal != 0 && vertical != 0) // Check for diagonal movement
+   {
+      // limit movement speed diagonally, so you move at 70% speed
+      horizontal *= moveLimiter;
+      vertical *= moveLimiter;
+   } 
 
-            if (input != Vector2.zero)
-            {
-                var targetPos = transform.position;
-                targetPos.x += input.x;
-                targetPos.y += input.y;
-
-                StartCoroutine(Move(targetPos));
-            }
-        }
-    }
-
-    IEnumerator Move(Vector3 targetPos)
-    {
-        isMoving = true;
-        
-        while ((targetPos - transform.position).sqrMagnitude > Mathf.Epsilon)
-        {
-            transform.position = Vector3.MoveTowards(transform.position, targetPos, moveSpeed * Time.deltaTime);
-            yield return null;
-        }
-        transform.position = targetPos;
-
-        isMoving = false;
-    }
+   body.velocity = new Vector2(horizontal * runSpeed, vertical * runSpeed);
+}
 }
